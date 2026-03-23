@@ -3,88 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Saz Dünyäsi - Aýdym Gözleg</title>
+    <title>KİNG ECHO - Music Player</title>
     <style>
         body {
-            font-family: 'Arial', sans-serif;
-            background-color: #181818;
-            color: white;
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #0b0b0b;
+            color: #e0e0e0;
             margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             padding: 20px;
         }
-        .container {
-            max-width: 800px;
-            margin: auto;
+
+        .search-section {
+            width: 100%;
+            max-width: 600px;
             text-align: center;
+            margin-bottom: 30px;
         }
-        .search-input {
+
+        input {
             width: 70%;
-            padding: 15px;
-            border-radius: 30px;
-            border: none;
+            padding: 12px 20px;
+            border-radius: 25px 0 0 25px;
+            border: 1px solid #333;
+            background: #1a1a1a;
+            color: white;
             outline: none;
-            font-size: 18px;
         }
-        .search-btn {
-            padding: 15px 25px;
-            border-radius: 30px;
+
+        button {
+            width: 25%;
+            padding: 12px;
+            border-radius: 0 25px 25px 0;
             border: none;
-            background-color: #ff0000;
+            background: #ff0000;
             color: white;
             cursor: pointer;
             font-weight: bold;
-            margin-left: 10px;
         }
-        #results {
-            margin-top: 30px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-        .video-card {
-            background: #282828;
-            padding: 10px;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        .video-card:hover {
-            background: #383838;
-        }
-        .video-card img {
+
+        #player-container {
             width: 100%;
-            border-radius: 8px;
+            max-width: 700px;
+            aspect-ratio: 16 / 9;
+            background: #000;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: none; /* Ilki bilen gizlin */
         }
-        .video-title {
-            font-size: 14px;
-            margin-top: 10px;
-            display: block;
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .info-text {
+            margin-top: 20px;
+            color: #888;
+            font-size: 0.9rem;
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>🎵 Aýdym Tap</h1>
-    <input type="text" id="query" class="search-input" placeholder="Aýdymyň adyny ýazyň...">
-    <button class="search-btn" onclick="searchMusic()">Tap</button>
-
-    <div id="results">
+    <div class="search-section">
+        <h1 style="color: #ff0000;">KİNG ECHO</h1>
+        <p>Aýdymyň adyny ýazyň we derrew diňläň</p>
+        <div style="display: flex; justify-content: center;">
+            <input type="text" id="songQuery" placeholder="Meselem: Janam janam...">
+            <button onclick="playMusic()">Diňle</button>
         </div>
-</div>
+    </div>
 
-<script>
-    function searchMusic() {
-        const query = document.getElementById('query').value;
-        const resultsDiv = document.getElementById('results');
-        
-        if (!query) return alert("Söz ýazyň!");
+    <div id="player-container">
+        <iframe id="ytPlayer" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    </div>
 
-        // Bu ýerde YouTube-yň resmi API-syny ýa-da gönüden-göni URL ugratmasyny ulanyp bilersiňiz
-        // Häzirki wagtda iň ýönekeý usul: YouTube-a gönükdirmek
-        window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`, '_blank');
-    }
-</script>
+    <p class="info-text">Bellik: Bu ulgam iň amatly netijäni awtomatiki tapyp berýär.</p>
+
+    <script>
+        function playMusic() {
+            const query = document.getElementById('songQuery').value;
+            const container = document.getElementById('player-container');
+            const player = document.getElementById('ytPlayer');
+
+            if (!query) {
+                alert("Haýyş, aýdym adyny ýazyň!");
+                return;
+            }
+
+            // API açarsyz iň gowy usul: YouTube Embed Search ulanmak
+            // Bu "search_query" arkaly göni iň meşhur netijäni açýar
+            const embedUrl = `https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(query)}&autoplay=1`;
+
+            player.src = embedUrl;
+            container.style.display = 'block'; // Pleýeri görkez
+            
+            // Sahypanyň pleýere tarap süýşmegi üçin
+            container.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Enter düwmesine basylanda hem gözlesin
+        document.getElementById('songQuery').addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                playMusic();
+            }
+        });
+    </script>
 
 </body>
 </html>
