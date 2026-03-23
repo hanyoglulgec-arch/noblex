@@ -3,142 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KİNG MUSIC - Gözleg</title>
+    <title>Saz Dünyäsi - Aýdym Gözleg</title>
     <style>
-        :root {
-            --bg-color: #0b0b0b;
-            --accent-color: #00ff41; /* Hacker Green */
-            --card-bg: #1a1a1a;
-            --text-main: #ffffff;
-            --text-dim: #b3b3b3;
-        }
-
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
+            font-family: 'Arial', sans-serif;
+            background-color: #181818;
+            color: white;
             margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
             padding: 20px;
         }
-
-        .search-container {
-            width: 100%;
-            max-width: 600px;
-            margin-top: 50px;
+        .container {
+            max-width: 800px;
+            margin: auto;
             text-align: center;
         }
-
-        h1 {
-            color: var(--accent-color);
-            text-shadow: 0 0 10px var(--accent-color);
-            font-size: 2.5rem;
-            margin-bottom: 30px;
-        }
-
-        .search-box {
-            position: relative;
-            display: flex;
-            align-items: center;
-        }
-
-        input[type="text"] {
-            width: 100%;
-            padding: 15px 25px;
+        .search-input {
+            width: 70%;
+            padding: 15px;
             border-radius: 30px;
-            border: 2px solid var(--card-bg);
-            background: var(--card-bg);
-            color: white;
-            font-size: 18px;
-            outline: none;
-            transition: 0.3s;
-        }
-
-        input[type="text"]:focus {
-            border-color: var(--accent-color);
-            box-shadow: 0 0 15px rgba(0, 255, 65, 0.2);
-        }
-
-        .btn-shazam {
-            background-color: #0088ff; /* Shazam Blue */
             border: none;
-            color: white;
+            outline: none;
+            font-size: 18px;
+        }
+        .search-btn {
             padding: 15px 25px;
             border-radius: 30px;
-            margin-left: 10px;
+            border: none;
+            background-color: #ff0000;
+            color: white;
             cursor: pointer;
             font-weight: bold;
-            transition: 0.3s;
+            margin-left: 10px;
         }
-
-        .btn-shazam:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 15px #0088ff;
-        }
-
-        .platforms {
-            margin-top: 40px;
+        #results {
+            margin-top: 30px;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            grid-template-columns: 1fr 1fr;
             gap: 20px;
-            width: 100%;
-            max-width: 600px;
         }
-
-        .platform-card {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 15px;
-            text-align: center;
+        .video-card {
+            background: #282828;
+            padding: 10px;
+            border-radius: 10px;
             cursor: pointer;
-            border: 1px solid transparent;
             transition: 0.3s;
         }
-
-        .platform-card:hover {
-            border-color: var(--accent-color);
-            background: #222;
+        .video-card:hover {
+            background: #383838;
         }
-
-        .platform-card i {
+        .video-card img {
+            width: 100%;
+            border-radius: 8px;
+        }
+        .video-title {
+            font-size: 14px;
+            margin-top: 10px;
             display: block;
-            margin-bottom: 10px;
-            font-size: 24px;
         }
-
-        .spotify { color: #1DB954; }
-        .youtube { color: #FF0000; }
-        .shazam { color: #0088ff; }
-
     </style>
 </head>
 <body>
 
-    <div class="search-container">
-        <h1>KİNG ECHO SEARCH</h1>
-        
-        <div class="search-box">
-            <input type="text" placeholder="Aýdym ýa-da aýdymçy ady...">
-            <button class="btn-shazam">SHAZAM</button>
-        </div>
+<div class="container">
+    <h1>🎵 Aýdym Tap</h1>
+    <input type="text" id="query" class="search-input" placeholder="Aýdymyň adyny ýazyň...">
+    <button class="search-btn" onclick="searchMusic()">Tap</button>
 
-        <div class="platforms">
-            <div class="platform-card">
-                <span class="youtube">🔴 YouTube</span>
-            </div>
-            <div class="platform-card">
-                <span class="spotify">🟢 Spotify</span>
-            </div>
-            <div class="platform-card">
-                <span class="shazam">🔵 Shazam</span>
-            </div>
-            <div class="platform-card">
-                <span style="color: #ffaa00;">🎵 Mp3 Download</span>
-            </div>
+    <div id="results">
         </div>
-    </div>
+</div>
+
+<script>
+    function searchMusic() {
+        const query = document.getElementById('query').value;
+        const resultsDiv = document.getElementById('results');
+        
+        if (!query) return alert("Söz ýazyň!");
+
+        // Bu ýerde YouTube-yň resmi API-syny ýa-da gönüden-göni URL ugratmasyny ulanyp bilersiňiz
+        // Häzirki wagtda iň ýönekeý usul: YouTube-a gönükdirmek
+        window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`, '_blank');
+    }
+</script>
 
 </body>
 </html>
