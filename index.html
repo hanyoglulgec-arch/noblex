@@ -3,74 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KİNG ECHO | Music Search</title>
+    <title>KİNG ECHO | Music Bot</title>
     <style>
-        body { font-family: sans-serif; background: #000; color: #fff; text-align: center; padding: 20px; }
-        .search-box { margin-bottom: 20px; }
-        input { padding: 12px; border-radius: 20px; border: none; width: 60%; outline: none; }
-        button { padding: 12px 20px; border-radius: 20px; border: none; background: #ff0000; color: white; cursor: pointer; font-weight: bold; }
-        .song-card { background: #111; margin: 10px auto; padding: 15px; border-radius: 10px; max-width: 400px; display: flex; align-items: center; border: 1px solid #333; }
-        .song-card img { width: 60px; height: 60px; border-radius: 5px; margin-right: 15px; }
-        .info { text-align: left; flex: 1; }
-        .title { display: block; font-weight: bold; }
-        .artist { font-size: 13px; color: #888; }
-        audio { width: 100%; margin-top: 10px; height: 30px; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #050505;
+            color: white;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+        }
+        h1 { color: #ff0000; font-size: 2rem; margin-bottom: 20px; }
+        
+        .search-box {
+            display: flex;
+            background: #1a1a1a;
+            border-radius: 30px;
+            padding: 5px;
+            border: 1px solid #333;
+        }
+        input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: white;
+            padding: 12px 20px;
+            outline: none;
+            font-size: 16px;
+        }
+        button {
+            background: #ff0000;
+            border: none;
+            color: white;
+            padding: 10px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        #player-wrapper {
+            margin-top: 30px;
+            display: none; /* Ilki gizlin */
+            background: #000;
+            border-radius: 15px;
+            overflow: hidden;
+            border: 1px solid #ff0000;
+        }
+
+        iframe {
+            width: 100%;
+            height: 350px;
+            border: none;
+        }
+
+        .bot-msg {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #888;
+            background: #111;
+            padding: 10px;
+            border-radius: 10px;
+        }
     </style>
 </head>
 <body>
 
-    <h2 style="color: #ff0000;">KİNG ECHO MUSIC</h2>
+<div class="container">
+    <h1>KİNG ECHO MUSIC</h1>
     
     <div class="search-box">
-        <input type="text" id="query" placeholder="Aýdym ady ýazyň...">
-        <button onclick="search()">GÖZLE</button>
+        <input type="text" id="musicInput" placeholder="Aýdymyň adyny ýazyň...">
+        <button onclick="findMusic()">TAP</button>
     </div>
 
-    <div id="results"></div>
+    <div id="player-wrapper">
+        <iframe id="ytPlayer" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    </div>
 
-    <script>
-        async function search() {
-            const query = document.getElementById('query').value;
-            const resultsDiv = document.getElementById('results');
+    <div class="bot-msg" id="botStatus">
+        @AydymGozle_bot stilinde aýdym gözleg ulgamy.
+    </div>
+</div>
 
-            if (!query) return;
+<script>
+    function findMusic() {
+        const query = document.getElementById('musicInput').value;
+        const playerWrapper = document.getElementById('player-wrapper');
+        const player = document.getElementById('ytPlayer');
+        const status = document.getElementById('botStatus');
 
-            resultsDiv.innerHTML = "Garaşyň...";
-
-            // CORS Proxy ulanylyp, iTunes-dan maglumat çekilýär
-            const proxy = "https://api.allorigins.win/get?url=";
-            const apiUrl = encodeURIComponent(`https://itunes.apple.com/search?term=${query}&media=music&limit=10`);
-
-            try {
-                const response = await fetch(proxy + apiUrl);
-                const rawData = await response.json();
-                const data = JSON.parse(rawData.contents); // AllOrigins JSON-y şeýle gaýtaryp berýär
-
-                resultsDiv.innerHTML = "";
-
-                if (data.results.length === 0) {
-                    resultsDiv.innerHTML = "Hiç zat tapylmady.";
-                    return;
-                }
-
-                data.results.forEach(track => {
-                    const card = document.createElement('div');
-                    card.className = 'song-card';
-                    card.innerHTML = `
-                        <img src="${track.artworkUrl100}">
-                        <div class="info">
-                            <span class="title">${track.trackName}</span>
-                            <span class="artist">${track.artistName}</span>
-                            <audio controls src="${track.previewUrl}"></audio>
-                        </div>
-                    `;
-                    resultsDiv.appendChild(card);
-                });
-            } catch (error) {
-                resultsDiv.innerHTML = "Proxy baglanyşygynda ýalňyşlyk boldy. Täzeden gözläň.";
-                console.error(error);
-            }
+        if (!query) {
+            alert("Aýdym adyny ýazyň!");
+            return;
         }
-    </script>
+
+        // Iň güýçli mugt usul: YouTube Embed Search Playlist
+        // Bu söze gabat gelýän aýdymlary bir pleýer edip jemleýär
+        const embedUrl = `https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(query)}&autoplay=1`;
+
+        player.src = embedUrl;
+        playerWrapper.style.display = "block";
+        status.innerHTML = `✅ <b>${query}</b> üçin netijeler tapyldy we pleýere goşuldy.`;
+        
+        // Ekrany pleýere tarap süýşürmek
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
+
+    // Enter düwmesini goldamak
+    document.getElementById('musicInput').addEventListener("keypress", function(e) {
+        if (e.key === "Enter") findMusic();
+    });
+</script>
+
 </body>
 </html>
