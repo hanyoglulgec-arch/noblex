@@ -3,36 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KİNG ECHO | Music Bot Web</title>
+    <title>KİNG ECHO | Aýdym Gözleg Bot</title>
     <style>
         :root {
-            --bg: #0e0e0e;
-            --card: #1a1a1a;
+            --bg: #0a0a0a;
+            --card: #161616;
             --primary: #ff0000;
             --text: #ffffff;
-            --secondary: #888;
+            --secondary: #aaaaaa;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', sans-serif;
             background-color: var(--bg);
             color: var(--text);
             margin: 0;
-            padding: 15px;
             display: flex;
             flex-direction: column;
             align-items: center;
+            padding-bottom: 100px;
         }
 
-        .search-wrapper {
+        /* Gözleg Bölümi */
+        .search-header {
             width: 100%;
-            max-width: 500px;
+            max-width: 600px;
+            padding: 20px;
             position: sticky;
-            top: 10px;
+            top: 0;
+            background: var(--bg);
             z-index: 100;
         }
 
-        .search-box {
+        .search-bar {
             display: flex;
             background: var(--card);
             border-radius: 12px;
@@ -50,7 +53,7 @@
             font-size: 16px;
         }
 
-        button {
+        .search-btn {
             background: var(--primary);
             border: none;
             color: white;
@@ -60,40 +63,46 @@
             font-weight: bold;
         }
 
-        /* Player Style */
-        #player-box {
+        /* Pleýer (Fixed Bottom) */
+        #player-container {
+            position: fixed;
+            bottom: 0;
             width: 100%;
-            max-width: 500px;
-            margin-top: 20px;
-            display: none;
             background: #000;
-            border-radius: 12px;
-            overflow: hidden;
-            border: 1px solid var(--primary);
+            border-top: 2px solid var(--primary);
+            display: none;
+            z-index: 1000;
         }
 
-        /* Results List (Bot Style) */
-        .results-list {
+        /* Sanaw dizaýny (Bot stili) */
+        .results-container {
             width: 100%;
-            max-width: 500px;
-            margin-top: 20px;
+            max-width: 600px;
+            padding: 10px;
         }
 
-        .song-item {
+        .song-card {
             background: var(--card);
-            margin-bottom: 8px;
-            padding: 12px;
-            border-radius: 10px;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             cursor: pointer;
             transition: 0.2s;
-            border-left: 4px solid transparent;
         }
 
-        .song-item:hover {
-            background: #252525;
-            border-left-color: var(--primary);
+        .song-card:hover {
+            background: #222;
+            transform: translateY(-2px);
+        }
+
+        .thumb {
+            width: 80px;
+            height: 60px;
+            border-radius: 8px;
+            object-fit: cover;
+            margin-right: 15px;
         }
 
         .song-info {
@@ -102,94 +111,106 @@
 
         .song-title {
             font-weight: bold;
-            font-size: 15px;
-            display: block;
-            margin-bottom: 3px;
+            font-size: 14px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
 
-        .song-artist {
+        .song-author {
             font-size: 12px;
             color: var(--secondary);
+            margin-top: 4px;
         }
 
-        .play-icon {
+        .loading {
+            text-align: center;
+            margin-top: 50px;
             color: var(--primary);
-            font-size: 20px;
-            margin-left: 10px;
+            display: none;
         }
     </style>
 </head>
 <body>
 
-    <div class="search-wrapper">
-        <div class="search-box">
-            <input type="text" id="query" placeholder="Aýdym ýa-da artist ady...">
-            <button onclick="searchMusic()">GÖZLE</button>
+    <div class="search-header">
+        <h2 style="text-align: center; color: var(--primary);">KİNG ECHO MUSIC</h2>
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Aýdymyň adyny ýazyň...">
+            <button class="search-btn" onclick="fetchSongs()">GÖZLE</button>
         </div>
     </div>
 
-    <div id="player-box">
-        <iframe id="main-yt" width="100%" height="250" src="" frameborder="0" allow="autoplay" allowfullscreen></iframe>
-    </div>
+    <div class="loading" id="loader">Gözlenilýär, garaşyň...</div>
 
-    <div class="results-list" id="results">
+    <div class="results-container" id="results">
         </div>
+
+    <div id="player-container">
+        <iframe id="youtubePlayer" width="100%" height="80" src="" frameborder="0" allow="autoplay"></iframe>
+        <button onclick="closePlayer()" style="position: absolute; right: 5px; top: -25px; background: red; color: white; border: none; border-radius: 5px; cursor: pointer;">✕ Ýap</button>
+    </div>
 
     <script>
-        async function searchMusic() {
-            const query = document.getElementById('query').value;
+        async function fetchSongs() {
+            const query = document.getElementById('searchInput').value;
             const resultsDiv = document.getElementById('results');
-            
+            const loader = document.getElementById('loader');
+
             if (!query) return;
 
-            resultsDiv.innerHTML = "<p style='text-align:center'>Gözlenilýär...</p>";
+            loader.style.display = 'block';
+            resultsDiv.innerHTML = "";
 
-            // API Key-siz iň güýçli usul: DuckDuckGo ýa-da Suggest API arkaly gözleg simulýasiýasy
-            // Ýöne brauzer üçin iň durnuklysy YouTube-yň öz RSS ýa-da Gözleg linkinden dinamiki çekmek
-            // Bu ýerde biz Bot usulynda sanaw emele getirýäris:
-            
-            const searchTerms = [
-                { title: `${query} (Official Audio)`, artist: "YouTube Music" },
-                { title: `${query} (Slowed + Reverb)`, artist: "KİNG ECHO Edit" },
-                { title: `${query} (Remix)`, artist: "Top Hit" },
-                { title: `${query} (Lyrics)`, artist: "Karaoke" }
-            ];
+            try {
+                // Invidious API ulanýarys (YouTube üçin mugt Proxy)
+                const response = await fetch(`https://invidious.snopyta.org/api/v1/search?q=${encodeURIComponent(query)}&type=video`);
+                const data = await response.json();
 
-            resultsDiv.innerHTML = ""; // Arassala
+                loader.style.display = 'none';
 
-            searchTerms.forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'song-item';
-                div.onclick = () => playThis(item.title);
-                
-                div.innerHTML = `
-                    <div class="song-info">
-                        <span class="song-title">${item.title}</span>
-                        <span class="song-artist">${item.artist}</span>
-                    </div>
-                    <div class="play-icon">▶</div>
-                `;
-                resultsDiv.appendChild(div);
-            });
+                data.forEach(video => {
+                    const card = document.createElement('div');
+                    card.className = 'song-card';
+                    card.onclick = () => playSong(video.videoId);
+
+                    card.innerHTML = `
+                        <img src="https://img.youtube.com/vi/${video.videoId}/mqdefault.jpg" class="thumb">
+                        <div class="song-info">
+                            <div class="song-title">${video.title}</div>
+                            <div class="song-author">${video.author}</div>
+                        </div>
+                        <div style="color: #ff0000; font-size: 20px;">▶</div>
+                    `;
+                    resultsDiv.appendChild(card);
+                });
+            } catch (error) {
+                loader.innerHTML = "Ýalňyşlyk ýüze çykdy. Täzeden gözläp görüň.";
+                console.error(error);
+            }
         }
 
-        function playThis(title) {
-            const playerBox = document.getElementById('player-box');
-            const iframe = document.getElementById('main-yt');
+        function playSong(id) {
+            const container = document.getElementById('player-container');
+            const iframe = document.getElementById('youtubePlayer');
             
-            // YouTube-yň "Auto-play first result" URL-ini ulanýarys
-            const cleanTitle = encodeURIComponent(title);
-            iframe.src = `https://www.youtube.com/embed?listType=search&list=${cleanTitle}&autoplay=1`;
-            
-            playerBox.style.display = 'block';
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            // YouTube Music interfeýsine meňzeş kiçi pleýer
+            iframe.src = `https://www.youtube.com/embed/${id}?autoplay=1&inline=1`;
+            container.style.display = 'block';
+        }
+
+        function closePlayer() {
+            const container = document.getElementById('player-container');
+            const iframe = document.getElementById('youtubePlayer');
+            iframe.src = "";
+            container.style.display = 'none';
         }
 
         // Enter düwmesi
-        document.getElementById('query').addEventListener("keypress", (e) => {
-            if (e.key === "Enter") searchMusic();
+        document.getElementById('searchInput').addEventListener("keypress", (e) => {
+            if (e.key === "Enter") fetchSongs();
         });
     </script>
-
 </body>
 </html>
