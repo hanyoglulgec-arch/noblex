@@ -3,177 +3,233 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KİNG ECHO - YouTube Player</title>
+    <title>KİNG ECHO - YouTube Full</title>
     <style>
         :root {
-            --bg: #0f0f0f;
+            --bg-black: #0f0f0f;
             --yt-red: #ff0000;
-            --card: #1e1e1e;
+            --yt-gray: #272727;
+            --text-white: #ffffff;
         }
 
         body {
-            background-color: var(--bg);
-            color: white;
+            background-color: var(--bg-black);
+            color: var(--text-white);
             font-family: "Roboto", sans-serif;
             margin: 0;
             padding: 0;
         }
 
-        /* Navigasiýa */
-        header {
+        /* Navbar Sazlamalary */
+        nav {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 12px 20px;
-            background: var(--bg);
+            padding: 10px 20px;
+            background: var(--bg-black);
             position: sticky;
             top: 0;
             z-index: 1000;
             border-bottom: 1px solid #222;
         }
 
-        .logo { font-size: 22px; font-weight: bold; color: white; text-transform: uppercase; }
-        .logo span { color: var(--yt-red); }
+        .logo {
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
 
-        .search-form { flex: 1; max-width: 500px; display: flex; margin: 0 20px; }
+        .logo span { color: var(--yt-red); font-size: 24px; }
+
+        .search-box {
+            flex: 0 1 600px;
+            display: flex;
+        }
+
         input {
             width: 100%;
-            padding: 10px 20px;
-            border-radius: 40px;
-            border: 1px solid #333;
             background: #121212;
+            border: 1px solid #333;
+            border-radius: 40px 0 0 40px;
+            padding: 10px 20px;
             color: white;
             font-size: 16px;
             outline: none;
         }
 
+        .search-btn {
+            background: var(--yt-gray);
+            border: 1px solid #333;
+            border-left: none;
+            border-radius: 0 40px 40px 0;
+            padding: 0 20px;
+            cursor: pointer;
+            color: white;
+        }
+
         /* Grid Sistemi */
-        .video-container {
+        .container {
+            padding: 20px;
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 20px;
-            padding: 20px;
         }
 
         .v-card {
             cursor: pointer;
-            transition: 0.3s;
+            transition: 0.2s;
         }
 
-        .v-card:hover { transform: scale(1.03); }
+        .v-card:hover { transform: scale(1.02); }
 
         .v-card img {
             width: 100%;
             aspect-ratio: 16/9;
             border-radius: 12px;
             object-fit: cover;
-            background: #222;
         }
 
-        .v-info { margin-top: 10px; }
-        .v-title { font-size: 15px; font-weight: bold; display: block; margin-bottom: 5px; }
-        .v-meta { color: #aaa; font-size: 13px; }
+        .v-info {
+            display: flex;
+            gap: 12px;
+            margin-top: 12px;
+        }
 
-        /* Player */
-        #main-player {
+        .v-text h3 {
+            font-size: 14px;
+            margin: 0 0 5px 0;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .v-text p { font-size: 12px; color: #aaa; margin: 0; }
+
+        /* Full Screen Video Player */
+        #player-modal {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95);
-            z-index: 9999;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            background: var(--bg-black);
+            z-index: 2000;
+            overflow-y: auto;
         }
 
-        iframe {
-            width: 95%;
-            max-width: 900px;
-            aspect-ratio: 16/9;
-            border: 2px solid #333;
-            border-radius: 15px;
+        .player-content {
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 0 15px;
         }
+
+        .video-box {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        iframe { width: 100%; height: 100%; border: none; }
+
+        .player-info { margin-top: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; }
+        .player-title { font-size: 20px; font-weight: bold; }
 
         .close-btn {
-            margin-top: 15px;
+            position: fixed;
+            top: 20px;
+            right: 20px;
             background: var(--yt-red);
             color: white;
             border: none;
-            padding: 10px 30px;
-            border-radius: 20px;
+            padding: 10px 20px;
+            border-radius: 25px;
             font-weight: bold;
             cursor: pointer;
+            z-index: 3000;
         }
 
-        #loading-text { text-align: center; color: var(--yt-red); display: none; padding: 20px; }
+        #loading { text-align: center; padding: 40px; color: var(--yt-red); display: none; }
     </style>
 </head>
 <body>
 
-<header>
-    <div class="logo"><span>●</span> KİNG ECHO</div>
-    <div class="search-form">
-        <input type="text" id="query" placeholder="YouTube-dan gözle..." onkeyup="if(event.keyCode==13) startSearch()">
+<nav>
+    <a href="#" class="logo"><span>▶</span> YouTube</a>
+    <div class="search-box">
+        <input type="text" id="sInp" placeholder="Gözle..." onkeyup="if(event.keyCode==13) doSearch()">
+        <button class="search-btn" onclick="doSearch()">🔍</button>
     </div>
-</header>
+    <div style="width: 40px;"></div>
+</nav>
 
-<div id="loading-text"><b>VPN barlaň, gözlenilýär...</b></div>
-<div class="video-container" id="results">
+<div id="loading"><b>Gözlenilýär... (VPN barlaň)</b></div>
+
+<div class="container" id="videoGrid">
     </div>
 
-<div id="main-player">
-    <div id="video-frame-box" style="width: 100%; display: flex; justify-content: center;"></div>
-    <button class="close-btn" onclick="closeVideo()">ÝAPMAK</button>
+<div id="player-modal">
+    <button class="close-btn" onclick="closePlayer()">ÝAPMAK</button>
+    <div class="player-content">
+        <div class="video-box" id="frameContainer"></div>
+        <div class="player-info">
+            <div class="player-title" id="pTitle">Wideo ady</div>
+            <p id="pAuthor" style="color: #aaa; margin-top: 10px;"></p>
+        </div>
+        <div style="margin-top: 20px; color: #ff0000; font-weight: bold;">KİNG ECHO Player</div>
+    </div>
 </div>
 
 <script>
-    async function startSearch() {
-        const val = document.getElementById('query').value;
-        const resDiv = document.getElementById('results');
-        const loader = document.getElementById('loading-text');
+    async function doSearch() {
+        const q = document.getElementById('sInp').value;
+        const grid = document.getElementById('videoGrid');
+        const ld = document.getElementById('loading');
 
-        if(!val) return;
-        loader.style.display = "block";
-        resDiv.innerHTML = "";
+        if(!q) return;
+        ld.style.display = "block";
+        grid.innerHTML = "";
 
         try {
-            // VPN arkaly YouTube-dan hakyky maglumat çekýän serwer (YouTube Scraper)
-            const response = await fetch(`https://invidious.flokinet.is/api/v1/search?q=${encodeURIComponent(val)}&type=video`);
+            // VPN arkaly YouTube maglumatlaryny çekýän iň durnukly API serweri
+            const response = await fetch(`https://invidious.projectsegfau.lt/api/v1/search?q=${encodeURIComponent(q)}&type=video`);
             const data = await response.json();
-            
-            loader.style.display = "none";
-
-            if (data.length === 0) {
-                resDiv.innerHTML = "<p>Hiç zat tapylmady.</p>";
-                return;
-            }
+            ld.style.display = "none";
 
             data.forEach(v => {
-                resDiv.innerHTML += `
-                    <div class="v-card" onclick="playVideo('${v.videoId}')">
-                        <img src="https://img.youtube.com/vi/${v.videoId}/maxresdefault.jpg" onerror="this.src='https://img.youtube.com/vi/${v.videoId}/mqdefault.jpg'">
+                grid.innerHTML += `
+                    <div class="v-card" onclick="openPlayer('${v.videoId}', '${v.title.replace(/'/g, "\\'")}', '${v.author}')">
+                        <img src="https://img.youtube.com/vi/${v.videoId}/mqdefault.jpg">
                         <div class="v-info">
-                            <span class="v-title">${v.title}</span>
-                            <span class="v-meta">${v.author} • ${v.publishedText}</span>
+                            <div class="v-text">
+                                <h3>${v.title}</h3>
+                                <p>${v.author} • ${v.publishedText}</p>
+                            </div>
                         </div>
                     </div>`;
             });
         } catch(e) {
-            loader.innerHTML = "<b>Säwlik! VPN-iňiz işläp duranlygyny barlaň.</b>";
+            ld.innerHTML = "<b>Säwlik! VPN-iňizi barlaň we täzeden synanyşyň.</b>";
         }
     }
 
-    function playVideo(id) {
-        const modal = document.getElementById('main-player');
-        const frameBox = document.getElementById('video-frame-box');
-        modal.style.display = "flex";
-        // YouTube-yň iň hilli resmi playeri
-        frameBox.innerHTML = `<iframe src="https://www.youtube.com/embed/${id}?autoplay=1&rel=0" allowfullscreen allow="autoplay"></iframe>`;
+    function openPlayer(id, title, author) {
+        document.getElementById('player-modal').style.display = "block";
+        document.getElementById('frameContainer').innerHTML = `<iframe src="https://www.youtube.com/embed/${id}?autoplay=1" allowfullscreen allow="autoplay"></iframe>`;
+        document.getElementById('pTitle').innerText = title;
+        document.getElementById('pAuthor').innerText = author;
+        document.body.style.overflow = "hidden"; // Esasy sahypanyň süýşmegini saklaýar
     }
 
-    function closeVideo() {
-        document.getElementById('main-player').style.display = "none";
-        document.getElementById('video-frame-box').innerHTML = "";
+    function closePlayer() {
+        document.getElementById('player-modal').style.display = "none";
+        document.getElementById('frameContainer').innerHTML = "";
+        document.body.style.overflow = "auto";
     }
 </script>
 
