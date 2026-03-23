@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="tk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KİNG ECHO - YouTube Player</title>
+    <style>
+        :root {
+            --bg: #0f0f0f;
+            --yt-red: #ff0000;
+            --card: #1e1e1e;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: white;
+            font-family: "Roboto", sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Navigasiýa */
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 20px;
+            background: var(--bg);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid #222;
+        }
+
+        .logo { font-size: 22px; font-weight: bold; color: white; text-transform: uppercase; }
+        .logo span { color: var(--yt-red); }
+
+        .search-form { flex: 1; max-width: 500px; display: flex; margin: 0 20px; }
+        input {
+            width: 100%;
+            padding: 10px 20px;
+            border-radius: 40px;
+            border: 1px solid #333;
+            background: #121212;
+            color: white;
+            font-size: 16px;
+            outline: none;
+        }
+
+        /* Grid Sistemi */
+        .video-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .v-card {
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .v-card:hover { transform: scale(1.03); }
+
+        .v-card img {
+            width: 100%;
+            aspect-ratio: 16/9;
+            border-radius: 12px;
+            object-fit: cover;
+            background: #222;
+        }
+
+        .v-info { margin-top: 10px; }
+        .v-title { font-size: 15px; font-weight: bold; display: block; margin-bottom: 5px; }
+        .v-meta { color: #aaa; font-size: 13px; }
+
+        /* Player */
+        #main-player {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 9999;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        iframe {
+            width: 95%;
+            max-width: 900px;
+            aspect-ratio: 16/9;
+            border: 2px solid #333;
+            border-radius: 15px;
+        }
+
+        .close-btn {
+            margin-top: 15px;
+            background: var(--yt-red);
+            color: white;
+            border: none;
+            padding: 10px 30px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        #loading-text { text-align: center; color: var(--yt-red); display: none; padding: 20px; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo"><span>●</span> KİNG ECHO</div>
+    <div class="search-form">
+        <input type="text" id="query" placeholder="YouTube-dan gözle..." onkeyup="if(event.keyCode==13) startSearch()">
+    </div>
+</header>
+
+<div id="loading-text"><b>VPN barlaň, gözlenilýär...</b></div>
+<div class="video-container" id="results">
+    </div>
+
+<div id="main-player">
+    <div id="video-frame-box" style="width: 100%; display: flex; justify-content: center;"></div>
+    <button class="close-btn" onclick="closeVideo()">ÝAPMAK</button>
+</div>
+
+<script>
+    async function startSearch() {
+        const val = document.getElementById('query').value;
+        const resDiv = document.getElementById('results');
+        const loader = document.getElementById('loading-text');
+
+        if(!val) return;
+        loader.style.display = "block";
+        resDiv.innerHTML = "";
+
+        try {
+            // VPN arkaly YouTube-dan hakyky maglumat çekýän serwer (YouTube Scraper)
+            const response = await fetch(`https://invidious.flokinet.is/api/v1/search?q=${encodeURIComponent(val)}&type=video`);
+            const data = await response.json();
+            
+            loader.style.display = "none";
+
+            if (data.length === 0) {
+                resDiv.innerHTML = "<p>Hiç zat tapylmady.</p>";
+                return;
+            }
+
+            data.forEach(v => {
+                resDiv.innerHTML += `
+                    <div class="v-card" onclick="playVideo('${v.videoId}')">
+                        <img src="https://img.youtube.com/vi/${v.videoId}/maxresdefault.jpg" onerror="this.src='https://img.youtube.com/vi/${v.videoId}/mqdefault.jpg'">
+                        <div class="v-info">
+                            <span class="v-title">${v.title}</span>
+                            <span class="v-meta">${v.author} • ${v.publishedText}</span>
+                        </div>
+                    </div>`;
+            });
+        } catch(e) {
+            loader.innerHTML = "<b>Säwlik! VPN-iňiz işläp duranlygyny barlaň.</b>";
+        }
+    }
+
+    function playVideo(id) {
+        const modal = document.getElementById('main-player');
+        const frameBox = document.getElementById('video-frame-box');
+        modal.style.display = "flex";
+        // YouTube-yň iň hilli resmi playeri
+        frameBox.innerHTML = `<iframe src="https://www.youtube.com/embed/${id}?autoplay=1&rel=0" allowfullscreen allow="autoplay"></iframe>`;
+    }
+
+    function closeVideo() {
+        document.getElementById('main-player').style.display = "none";
+        document.getElementById('video-frame-box').innerHTML = "";
+    }
+</script>
+
+</body>
+</html>
