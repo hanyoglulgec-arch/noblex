@@ -3,181 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KİNG ECHO | Mugt Aýdym Tap</title>
+    <title>KİNG ECHO | Music Search</title>
     <style>
-        :root {
-            --primary: #00d2ff;
-            --bg: #080808;
-            --card: #121212;
-            --text: #ffffff;
-        }
-
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .search-container {
-            width: 100%;
-            max-width: 500px;
-            margin-top: 30px;
-        }
-
-        .input-group {
-            display: flex;
-            background: var(--card);
-            border-radius: 30px;
-            padding: 5px;
-            border: 1px solid #333;
-        }
-
-        input {
-            flex: 1;
-            background: transparent;
-            border: none;
-            color: white;
-            padding: 15px;
-            outline: none;
-            font-size: 16px;
-        }
-
-        button {
-            background: var(--primary);
-            border: none;
-            color: black;
-            padding: 0 25px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        #results {
-            width: 100%;
-            max-width: 500px;
-            margin-top: 30px;
-        }
-
-        .song-card {
-            background: var(--card);
-            margin-bottom: 15px;
-            padding: 15px;
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            border: 1px solid #222;
-            transition: 0.3s;
-        }
-
-        .song-card:hover {
-            border-color: var(--primary);
-            background: #1a1a1a;
-        }
-
-        .album-art {
-            width: 70px;
-            height: 70px;
-            border-radius: 10px;
-            margin-right: 15px;
-        }
-
-        .info { flex: 1; }
-
-        .title { font-weight: bold; font-size: 16px; margin-bottom: 5px; display: block; }
-        .artist { color: #888; font-size: 14px; }
-
-        .play-btn {
-            background: #ff0000;
-            color: white;
-            border: none;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-        }
-
-        .audio-preview {
-            width: 100%;
-            margin-top: 10px;
-            height: 30px;
-        }
+        body { font-family: sans-serif; background: #000; color: #fff; text-align: center; padding: 20px; }
+        .search-box { margin-bottom: 20px; }
+        input { padding: 12px; border-radius: 20px; border: none; width: 60%; outline: none; }
+        button { padding: 12px 20px; border-radius: 20px; border: none; background: #ff0000; color: white; cursor: pointer; font-weight: bold; }
+        .song-card { background: #111; margin: 10px auto; padding: 15px; border-radius: 10px; max-width: 400px; display: flex; align-items: center; border: 1px solid #333; }
+        .song-card img { width: 60px; height: 60px; border-radius: 5px; margin-right: 15px; }
+        .info { text-align: left; flex: 1; }
+        .title { display: block; font-weight: bold; }
+        .artist { font-size: 13px; color: #888; }
+        audio { width: 100%; margin-top: 10px; height: 30px; }
     </style>
 </head>
 <body>
 
-    <h1 style="color: var(--primary);">KİNG ECHO</h1>
-    <p style="color: #666;">Aýdymyň adyny ýa-da sözlerini ýazyň</p>
-
-    <div class="search-container">
-        <div class="input-group">
-            <input type="text" id="query" placeholder="Meselem: Janym diýme...">
-            <button onclick="searchMusic()">TAP</button>
-        </div>
+    <h2 style="color: #ff0000;">KİNG ECHO MUSIC</h2>
+    
+    <div class="search-box">
+        <input type="text" id="query" placeholder="Aýdym ady ýazyň...">
+        <button onclick="search()">GÖZLE</button>
     </div>
 
-    <div id="results">
-        </div>
+    <div id="results"></div>
 
     <script>
-        async function searchMusic() {
+        async function search() {
             const query = document.getElementById('query').value;
             const resultsDiv = document.getElementById('results');
 
             if (!query) return;
 
-            resultsDiv.innerHTML = "<p style='text-align:center'>Gözlenilýär...</p>";
+            resultsDiv.innerHTML = "Garaşyň...";
 
-            // iTunes API - Doly mugt we API Key gerek däl
-            const url = `https://itunes.apple.com/search?term=${encodeURIComponent(query)}&media=music&limit=10`;
+            // CORS Proxy ulanylyp, iTunes-dan maglumat çekilýär
+            const proxy = "https://api.allorigins.win/get?url=";
+            const apiUrl = encodeURIComponent(`https://itunes.apple.com/search?term=${query}&media=music&limit=10`);
 
             try {
-                const response = await fetch(url);
-                const data = await response.json();
-                
+                const response = await fetch(proxy + apiUrl);
+                const rawData = await response.json();
+                const data = JSON.parse(rawData.contents); // AllOrigins JSON-y şeýle gaýtaryp berýär
+
                 resultsDiv.innerHTML = "";
 
                 if (data.results.length === 0) {
-                    resultsDiv.innerHTML = "<p>Hiç zat tapylmady :(</p>";
+                    resultsDiv.innerHTML = "Hiç zat tapylmady.";
                     return;
                 }
 
                 data.results.forEach(track => {
                     const card = document.createElement('div');
                     card.className = 'song-card';
-                    
                     card.innerHTML = `
-                        <img src="${track.artworkUrl100}" class="album-art">
+                        <img src="${track.artworkUrl100}">
                         <div class="info">
                             <span class="title">${track.trackName}</span>
                             <span class="artist">${track.artistName}</span>
-                            <audio controls class="audio-preview">
-                                <source src="${track.previewUrl}" type="audio/mpeg">
-                            </audio>
+                            <audio controls src="${track.previewUrl}"></audio>
                         </div>
-                        <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(track.trackName + ' ' + track.artistName)}" 
-                           target="_blank" class="play-btn">▶</a>
                     `;
                     resultsDiv.appendChild(card);
                 });
             } catch (error) {
-                resultsDiv.innerHTML = "<p>Internet baglanyşygyny barlaň.</p>";
+                resultsDiv.innerHTML = "Proxy baglanyşygynda ýalňyşlyk boldy. Täzeden gözläň.";
+                console.error(error);
             }
         }
-
-        // Enter düwmesi
-        document.getElementById('query').addEventListener("keypress", (e) => {
-            if (e.key === "Enter") searchMusic();
-        });
     </script>
-
 </body>
 </html>
