@@ -3,121 +3,186 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KİNG ECHO | Music Bot</title>
+    <title>KİNG ECHO | Mugt YouTube API</title>
     <style>
+        :root {
+            --bg: #050505;
+            --card: #121212;
+            --primary: #ff0000;
+            --text: #ffffff;
+            --secondary: #888;
+        }
+
         body {
             font-family: 'Segoe UI', sans-serif;
-            background-color: #050505;
-            color: white;
+            background: var(--bg);
+            color: var(--text);
             margin: 0;
-            padding: 20px;
-            text-align: center;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-        .container {
-            max-width: 600px;
-            margin: auto;
+
+        .search-wrapper {
+            width: 100%;
+            max-width: 500px;
+            position: sticky;
+            top: 10px;
+            z-index: 100;
         }
-        h1 { color: #ff0000; font-size: 2rem; margin-bottom: 20px; }
-        
+
         .search-box {
             display: flex;
-            background: #1a1a1a;
-            border-radius: 30px;
+            background: var(--card);
+            border-radius: 15px;
             padding: 5px;
             border: 1px solid #333;
         }
+
         input {
             flex: 1;
             background: transparent;
             border: none;
             color: white;
-            padding: 12px 20px;
+            padding: 12px;
             outline: none;
             font-size: 16px;
         }
+
         button {
-            background: #ff0000;
+            background: var(--primary);
             border: none;
             color: white;
-            padding: 10px 25px;
-            border-radius: 25px;
+            padding: 0 20px;
+            border-radius: 10px;
             cursor: pointer;
             font-weight: bold;
         }
 
-        #player-wrapper {
-            margin-top: 30px;
-            display: none; /* Ilki gizlin */
-            background: #000;
-            border-radius: 15px;
-            overflow: hidden;
-            border: 1px solid #ff0000;
-        }
-
-        iframe {
+        /* Bot Style List */
+        .results-list {
             width: 100%;
-            height: 350px;
-            border: none;
+            max-width: 500px;
+            margin-top: 20px;
         }
 
-        .bot-msg {
-            margin-top: 15px;
-            font-size: 14px;
-            color: #888;
-            background: #111;
+        .song-card {
+            background: var(--card);
+            margin-bottom: 10px;
             padding: 10px;
-            border-radius: 10px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .song-card:hover {
+            border-color: var(--primary);
+            background: #1a1a1a;
+        }
+
+        .thumb {
+            width: 90px;
+            height: 60px;
+            border-radius: 8px;
+            margin-right: 15px;
+            object-fit: cover;
+        }
+
+        .info { flex: 1; }
+        .title { font-weight: bold; font-size: 14px; display: block; }
+        .author { font-size: 12px; color: var(--secondary); margin-top: 4px; }
+
+        /* Player Overlay */
+        #player-overlay {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: #000;
+            border-top: 2px solid var(--primary);
+            display: none;
+            z-index: 1000;
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>KİNG ECHO MUSIC</h1>
-    
-    <div class="search-box">
-        <input type="text" id="musicInput" placeholder="Aýdymyň adyny ýazyň...">
-        <button onclick="findMusic()">TAP</button>
+    <div class="search-wrapper">
+        <h2 style="text-align: center; color: var(--primary); margin-top: 0;">KİNG ECHO</h2>
+        <div class="search-box">
+            <input type="text" id="query" placeholder="Aýdym ady...">
+            <button onclick="searchMusic()">GÖZLE</button>
+        </div>
     </div>
 
-    <div id="player-wrapper">
-        <iframe id="ytPlayer" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    <div class="results-list" id="results">
+        </div>
+
+    <div id="player-overlay">
+        <iframe id="main-player" width="100%" height="200" src="" frameborder="0" allow="autoplay" allowfullscreen></iframe>
+        <button onclick="closePlayer()" style="width:100%; background:#222; color:white; padding:5px; border:none; cursor:pointer;">ÝAP</button>
     </div>
 
-    <div class="bot-msg" id="botStatus">
-        @AydymGozle_bot stilinde aýdym gözleg ulgamy.
-    </div>
-</div>
+    <script>
+        // Mugt Invidious Instansy (API Key gerek däl)
+        const API_BASE = "https://inv.riverside.rocks/api/v1";
 
-<script>
-    function findMusic() {
-        const query = document.getElementById('musicInput').value;
-        const playerWrapper = document.getElementById('player-wrapper');
-        const player = document.getElementById('ytPlayer');
-        const status = document.getElementById('botStatus');
+        async function searchMusic() {
+            const query = document.getElementById('query').value;
+            const resultsDiv = document.getElementById('results');
 
-        if (!query) {
-            alert("Aýdym adyny ýazyň!");
-            return;
+            if (!query) return;
+
+            resultsDiv.innerHTML = "<p style='text-align:center'>Bot gözleýär...</p>";
+
+            try {
+                // Hakyky YouTube gözlegi (API açarsyz)
+                const response = await fetch(`${API_BASE}/search?q=${encodeURIComponent(query)}&type=video`);
+                const data = await response.json();
+
+                resultsDiv.innerHTML = "";
+
+                data.forEach(video => {
+                    const card = document.createElement('div');
+                    card.className = 'song-card';
+                    card.onclick = () => playSong(video.videoId);
+
+                    card.innerHTML = `
+                        <img src="https://img.youtube.com/vi/${video.videoId}/mqdefault.jpg" class="thumb">
+                        <div class="info">
+                            <span class="title">${video.title}</span>
+                            <span class="author">${video.author}</span>
+                        </div>
+                        <div style="color:var(--primary)">▶</div>
+                    `;
+                    resultsDiv.appendChild(card);
+                });
+            } catch (error) {
+                resultsDiv.innerHTML = "<p style='color:red'>Ýalňyşlyk! Başga bir proxy synanyşylýar...</p>";
+                console.error(error);
+            }
         }
 
-        // Iň güýçli mugt usul: YouTube Embed Search Playlist
-        // Bu söze gabat gelýän aýdymlary bir pleýer edip jemleýär
-        const embedUrl = `https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(query)}&autoplay=1`;
+        function playSong(id) {
+            const overlay = document.getElementById('player-overlay');
+            const player = document.getElementById('main-player');
+            player.src = `https://www.youtube.com/embed/${id}?autoplay=1`;
+            overlay.style.display = 'block';
+        }
 
-        player.src = embedUrl;
-        playerWrapper.style.display = "block";
-        status.innerHTML = `✅ <b>${query}</b> üçin netijeler tapyldy we pleýere goşuldy.`;
-        
-        // Ekrany pleýere tarap süýşürmek
-        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-    }
+        function closePlayer() {
+            document.getElementById('player-overlay').style.display = 'none';
+            document.getElementById('main-player').src = "";
+        }
 
-    // Enter düwmesini goldamak
-    document.getElementById('musicInput').addEventListener("keypress", function(e) {
-        if (e.key === "Enter") findMusic();
-    });
-</script>
+        // Enter düwmesi
+        document.getElementById('query').addEventListener("keypress", (e) => {
+            if (e.key === "Enter") searchMusic();
+        });
+    </script>
 
 </body>
 </html>
